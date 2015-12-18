@@ -450,7 +450,7 @@ class Jugador(pygame.sprite.Sprite):
                         	action="dano"
 
 
-                        dic={"mapa":ob.fondo,"vidas": ob.vidas,"vida": ob.vida,"username":ob.nombre}
+                        dic={"mapa":ob.fondo,"vidas": ob.vidas,"vida": ob.vida,"username":ob.nombre,"asesino":self.nombre}
                         socket_server.send_multipart([action,json.dumps(dic,sort_keys=True)])
 
             else:
@@ -958,12 +958,13 @@ def from_server(action,player,username,dic1,fondo):
              player.y=dic1["posy"]
              player.Orientacion=dic1["direc"]
              player.t=dic1["t"]
+             player.mana=dic1["mana"]
              player.vx=dic1["vx"]
              player.vy=dic1["vy"]
              player.moving=True
              player.image=player.imagenes[player.Orientacion][player.personaje_Actual]
     if action == "golpe":
-        print "golpe"
+        
         player.animacion=True
 
     if action=="mapeo":
@@ -1670,28 +1671,28 @@ def Game(n):
                     leftsigueapretada=True
                     players[username].vx=-speed
                     if count_move == 0:
-                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"vx":players[username].vx,"vy":players[username].vy}
+                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"mana":players[username].mana,"vx":players[username].vx,"vy":players[username].vy}
                         socket_server.send_multipart(["move",json.dumps(dic,sort_keys=True)])
                         count_move=1
                 if event.key == pygame.K_RIGHT:
                     rightsigueapretada=True
                     players[username].vx=speed
                     if count_move == 0:
-                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"vx":players[username].vx,"vy":players[username].vy}
+                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"mana":players[username].mana,"vx":players[username].vx,"vy":players[username].vy}
                         socket_server.send_multipart(["move",json.dumps(dic,sort_keys=True)])
                         count_move=1
                 if event.key== pygame.K_UP:
                     upsigueapretada=True
                     players[username].vy=-speed
                     if count_move == 0:
-                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"vx":players[username].vx,"vy":players[username].vy}
+                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"mana":players[username].mana,"vx":players[username].vx,"vy":players[username].vy}
                         socket_server.send_multipart(["move",json.dumps(dic,sort_keys=True)])
                         count_move=1
                 if event.key == pygame.K_DOWN:
                     downsigueapretada=True
                     players[username].vy=speed
                     if count_move == 0:
-                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"vx":players[username].vx,"vy":players[username].vy}
+                        dic={"username":username,"posx":players[username].rect.x,"posy":players[username].rect.y,"direc":players[username].Orientacion,"i":players[username].personaje_Actual,"t":players[username].t,"mana":players[username].mana,"vx":players[username].vx,"vy":players[username].vy}
                         socket_server.send_multipart(["move",json.dumps(dic,sort_keys=True)])
                         count_move=1
 
@@ -1776,10 +1777,10 @@ def Game(n):
        nombre_vida_manajugador.update(p.interfase())
        mapeo.update(nombre_vida_manajugador)
        if(perdimana>10 and p.gastarmana):
-        p.mana-=10
+        p.mana-=1
         perdimana=0
 
-       if(p.mana<=0):
+       if p.mana<=0 and p.gastarmana:
         p.destransformar()   
 
       perdimana+=1     
