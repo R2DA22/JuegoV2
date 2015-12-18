@@ -43,9 +43,15 @@ while True:
 			gamer=Player(id_client,dic)
 			players[username]=gamer
 
+<<<<<<< HEAD
 			#fondo = random.randint(1,18)
 			
 			print username + " En linea"
+=======
+			fondo = random.randint(1,18)
+			
+			print username + " En line"
+>>>>>>> 19a60bc8607aaebe97d32796f0767f086b519e1b
 			
 			for addres in players.values():	
 					if addres.Online:
@@ -73,6 +79,7 @@ while True:
 			multicast(socket_clients,id_client,players,action,{"username":username},len(players))
 			n_online-=1
 
+<<<<<<< HEAD
 		if action=="move" or action=="stop" or action=="golpe" or action =="mapeo" or action == "dano" or action=="dead" or action=="transformar":
 			dic1=json.loads(socket_clients.recv())
 			nombre=dic1["username"]
@@ -88,6 +95,19 @@ while True:
 			if action=="dead":
 				asesino=dic1["asesino"]
 				print players[nombre].dic["username"] + " fue asesinado por "+ players[asesino].dic["username"]
+=======
+		if action=="move" or action=="golpe" or action=="stop" or action =="mapeo" or action == "dano" or action=="dead" or action=="transformar":
+			dic1=json.loads(socket_clients.recv())
+			nombre=dic1["username"]
+			if action=="move":
+				print "hola"
+				players[nombre].dic["direc"]=dic1["direc"]
+				players[nombre].dic["posx"]=dic1["posx"]
+				players[nombre].dic["posy"]=dic1["posy"]
+				#players[nombre].dic["personaje"]=dic1["personaje"]
+			if action=="mapeo" or action=="dead":
+				players[nombre].dic["fondo"]=dic1["mapa"]
+>>>>>>> 19a60bc8607aaebe97d32796f0767f086b519e1b
 			multicast(socket_clients,id_client,players,action,dic1,len(players)-1)
 			
     
