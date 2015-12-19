@@ -154,7 +154,7 @@ class Fondos (pygame.sprite.Sprite):
         self.image=pygame.image.load("fondos/mini/"+str(fondo)+".png")
 
 class Jugador(pygame.sprite.Sprite):
-    def __init__(self,nombre,direc,x,y,fondo,personaje):
+    def __init__(self,nombre,direc,x,y,fondo,personaje,vida,mana):
         pygame.sprite.Sprite.__init__(self)
         self.personaje=personaje
         self.li0= pygame.image.load("Personajes/"+str(self.personaje)+"/laterali/0.png")
@@ -343,10 +343,10 @@ class Jugador(pygame.sprite.Sprite):
         self.leon=[[self.leonli0,self.leonli1,self.leonli2,self.leonli3,self.leonli4,self.leonli5,self.leonli6,self.leonli7,self.leonli8,self.leonli9,self.leonli10],[self.leonld0,self.leonld1,self.leonld2,self.leonld3,self.leonld4,self.leonld5,self.leonld6,self.leonld7,self.leonld8,self.leonld9,self.leonld10],[self.leont0,self.leont1,self.leont2,self.leont3,self.leont4,self.leont5,self.leont6,self.leont7,self.leont8,self.leont9,self.leont10],[self.leonf0,self.leonf1,self.leonf2,self.leonf3,self.leonf4,self.leonf5,self.leonf6,self.leonf7,self.leonf8,self.leonf9,self.leonf10]]
         self.ataqueleon=[[self.Aleonli1,self.Aleonli2,self.Aleonli3,self.Aleonli4,self.Aleonli5,self.Aleonli6,self.Aleonli7,self.Aleonli8,self.Aleonli9,self.Aleonli10],[self.Aleonld1,self.Aleonld2,self.Aleonld3,self.Aleonld4,self.Aleonld5,self.Aleonld6,self.Aleonld7,self.Aleonld8,self.Aleonld9,self.Aleonld10],[self.Aleont1,self.Aleont2,self.Aleont3,self.Aleont4,self.Aleont5,self.Aleont6,self.Aleont7,self.Aleont8,self.Aleont9,self.Aleont10],[self.Aleonf1,self.Aleonf2,self.Aleonf3,self.Aleonf4,self.Aleonf5,self.Aleonf6,self.Aleonf7,self.Aleonf8,self.Aleonf9,self.Aleonf10]]
         self.nombre=nombre
-        self.salud=100
+        self.salud=vida
         self.vidas=3
         self.vida=self.salud
-        self.manatotal=100
+        self.manatotal=mana
         self.mana=self.manatotal
         self.x=x
         self.y=y
@@ -380,12 +380,13 @@ class Jugador(pygame.sprite.Sprite):
         self.moving=False
         self.Orientacion=direc
         self.transformado=False
-
            
     def chocarpbjetos(self,ob):
         activado=True
         for col in ob:
             if pygame.sprite.collide_rect(self,col):
+                self.choque=True
+                col.choque=True
                 if self.Orientacion==2 and activado:
                     self.y+=25
                     activado=False
@@ -401,60 +402,52 @@ class Jugador(pygame.sprite.Sprite):
                 if self.Orientacion==0 and activado:
                     self.x+=25
                     activado=False
-
                 self.rect.x=self.x
                 self.rect.y=self.y
+            else:
+                self.choque=False
+                
 
-    def chocarpvp(self,socket_server,ob):
-    	    
-            if pygame.sprite.collide_rect(self,ob):              
-                    """if ob.Orientacion==0 and (self.Orientacion==0 or self.Orientacion==3 or self.Orientacion==2):
+    def chocarJugador(self,ob): 
+        if pygame.sprite.collide_rect(self,ob):
+            self.choque=True
+        else:
+            self.choque=False
+
+    def chocarJugadores(self,jugadores):
+        activado=True
+        for ob in jugadores.values():
+            if ob.nombre != self.nombre:
+                if pygame.sprite.collide_rect(self,ob):
+                    if ob.Orientacion==0 and (self.Orientacion==0 or self.Orientacion==3 or self.Orientacion==2):
                         self.x=self.x
-                        
-                        
                     elif ob.Orientacion==1 and (self.Orientacion==1 or self.Orientacion==3 or self.Orientacion==2):
                         self.x=self.x
-                        
-
                     elif ob.Orientacion==2 and (self.Orientacion==0 or self.Orientacion==2 or self.Orientacion==1):
-                        self.y=self.y
-                        
+                        self.y=self.y            
                     elif ob.Orientacion==3 and (self.Orientacion==0 or self.Orientacion==3 or self.Orientacion==1):
                         self.y=self.y
-                        
                     else:
-                        if self.Orientacion==0:
-                            self.x+=25
-
-                        if self.Orientacion==1:
-                            self.x-=25
-                            
-                        if self.Orientacion==2:
-                            self.y+=25
-                            
-                        if self.Orientacion==3:
-                            self.y-=25"""
-                            
-                        
-                    if(self.lastimar):
-                        ob.vida-=self.dano
-                        self.lastimar=False
-                        if(ob.vida <= 0):
-                            print ("perdio una vida")
-                            ob.vidas-=1
-                            ob.vida=100
-                            valor=random.randint(1,18) 
-                            ob.fondo=valor
-                            action="dead"
-                        else:
-                        	action="dano"
-
-
-                        dic={"mapa":ob.fondo,"vidas": ob.vidas,"vida": ob.vida,"username":ob.nombre,"asesino":self.nombre}
-                        socket_server.send_multipart([action,json.dumps(dic,sort_keys=True)])
-
-            else:
-            	self.lastimar=False 
+                        self.choque=True
+                        ob.choque=True
+                        if self.Orientacion==0  and activado:
+                            if self.moving:
+                                self.x+=20
+                        if self.Orientacion==1  and activado:
+                            if self.moving:
+                                self.x-=20            
+                        if self.Orientacion==2  and activado:
+                            if self.moving:
+                                self.y+=20
+                        if self.Orientacion==3  and activado:
+                            if self.moving:
+                                self.y-=20
+                        activado=False
+                        self.rect.x=self.x
+                        self.rect.y=self.y
+                else:
+                    self.choque=False
+                    ob.choque=False
 
     def transformar(self):
         self.transformado=True
@@ -573,7 +566,20 @@ class Jugador(pygame.sprite.Sprite):
             self.image=self.ataqueleon[self.Orientacion][self.personaje_Actualy]
         else:
             self.image=self.ataques[self.Orientacion][self.personaje_Actualy]
-
+    def herir(self,ob,socket_server):
+            ob.vida-=self.dano
+            self.lastimar=False
+            if(ob.vida <= 0):
+                print ("perdio una vida")
+                ob.vidas-=1
+                ob.vida=100
+                valor=random.randint(1,18) 
+                ob.fondo=valor
+                action="dead"
+            else:
+                action="dano"
+            dic={"mapa":ob.fondo,"vidas": ob.vidas,"vida": ob.vida,"username":ob.nombre,"asesino":self.nombre}
+            socket_server.send_multipart([action,json.dumps(dic,sort_keys=True)])
         
         
 
@@ -907,21 +913,27 @@ class AnimacionMapa (pygame.sprite.Sprite):
                 col.rutina()
                 col.ataca=False"""
 
-        #COLICION JUGADORES
-        for col in jugadores:
-            if col.nombre != jugador.nombre:
-                    jugador.chocarpvp(socket_server,col)
-        for  gamer in players.values():
+        #COLISION JUGADORES
+       
+        jugador.lastimar=False
+        jugador.choque=False
+        for  gamer in players.values(): 
             if not gamer.animacion:
-                
-                gamer.move()
-                gamer.chocarpbjetos(objetos)#COLICION JUGADORES CON OBJETOS
+                gamer.chocarpbjetos(objetos)
+                #if not gamer.choque:               #Verificar la colision con dos jugadores moviendose al tiempo, la colison aun le falta detalles, porque no se alcanzan a golpear a  veces
+                 #   gamer.chocarJugadores(players)
+                if not gamer.choque:
+                    gamer.move()
+                #COLICION JUGADORES CON OBJETOS
             else:
                 gamer.anima()
-        #jugador.chocarpbjetos(objetos)
-        
-        
-         
+        for gamer in players.values():
+            if gamer.nombre != jugador.nombre:
+                jugador.chocarJugador(gamer)
+                if jugador.choque:
+                    if jugador.lastimar:
+                        jugador.herir(gamer,socket_server)
+                        jugador.choque=False 
 
         return retornar
 
@@ -1039,7 +1051,7 @@ def Game(n):
           number_players=int(json.loads(socket_server.recv()))
           while j<number_players:
             dic=json.loads(socket_server.recv())
-            jugador_temp=Jugador(dic["username"],dic["direc"],dic["posx"],dic["posy"],dic["fondo"],dic["personaje"])
+            jugador_temp=Jugador(dic["username"],dic["direc"],dic["posx"],dic["posy"],dic["fondo"],dic["personaje"],dic["vida"],dic["mana"])
             players[dic["username"]]=jugador_temp
             if 1==dic["fondo"]:
             	jugadores.add(jugador_temp)
